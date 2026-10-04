@@ -1,0 +1,9 @@
+{
+  "id": "circuit",
+  "name": "Circuit",
+  "version": "0.1.0",
+  "minAppVersion": "1.1.0",
+  "description": "Renderizza schemi elettrici SVG a partire da blocchi JSON strutturati.",
+  "author": "zMattew_",
+  "isDesktopOnly": false
+}

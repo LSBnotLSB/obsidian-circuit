@@ -1,0 +1,211 @@
+/* Note Render Container */
+.circuit-block-container {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+  margin: 1em 0;
+}
+
+.circuit-container {
+  overflow: auto;
+  padding: 12px;
+  background-color: var(--background-secondary);
+  border-radius: 8px;
+  border: 1px solid var(--background-modifier-border);
+}
+
+.circuit-svg {
+  display: block;
+  font-family: var(--font-monospace);
+  max-width: 100%;
+  height: auto;
+}
+
+.circuit-error {
+  color: var(--text-error);
+  padding: 8px 12px;
+  background-color: var(--background-modifier-error);
+  border-radius: 4px;
+  font-family: var(--font-monospace);
+  font-size: 0.9em;
+}
+
+/* Note Action Toolbar (always subtly visible, full on hover) */
+.circuit-block-toolbar {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  gap: 6px;
+  opacity: 0.75;
+  transition: opacity 0.15s ease-in-out;
+  z-index: 5;
+}
+
+.circuit-block-container:hover .circuit-block-toolbar {
+  opacity: 1;
+}
+
+.circuit-block-btn {
+  background-color: var(--background-primary);
+  color: var(--text-muted);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 0.8em;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.circuit-block-btn:hover {
+  color: var(--text-normal);
+  background-color: var(--background-modifier-hover);
+  border-color: var(--interactive-accent);
+}
+
+/* Modal Window */
+.circuit-editor-modal {
+  width: 90vw !important;
+  max-width: 960px !important;
+  max-height: 90vh !important;
+  display: flex;
+  flex-direction: column;
+  padding: 16px 20px !important;
+}
+
+.circuit-editor-header {
+  margin-bottom: 12px;
+}
+
+.circuit-editor-header h2 {
+  margin: 0 0 4px 0;
+  font-size: 1.3em;
+}
+
+.circuit-editor-subtitle {
+  margin: 0;
+  font-size: 0.85em;
+  color: var(--text-muted);
+}
+
+/* Modal Toolbar */
+.circuit-editor-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background-color: var(--background-secondary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  margin-bottom: 12px;
+}
+
+.circuit-toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding-right: 8px;
+  border-right: 1px solid var(--background-modifier-border);
+}
+
+.circuit-toolbar-group:last-child {
+  border-right: none;
+  padding-right: 0;
+}
+
+.circuit-toolbar-label {
+  font-size: 0.8em;
+  color: var(--text-muted);
+  margin-right: 4px;
+}
+
+.circuit-toolbar-btn {
+  background-color: var(--background-primary);
+  color: var(--text-normal);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 0.85em;
+  cursor: pointer;
+  transition: all 0.1s ease;
+}
+
+.circuit-toolbar-btn:hover:not(:disabled) {
+  background-color: var(--background-modifier-hover);
+  border-color: var(--text-muted);
+}
+
+.circuit-toolbar-btn.is-active {
+  background-color: var(--interactive-accent);
+  color: var(--text-on-accent);
+  border-color: var(--interactive-accent);
+}
+
+.circuit-toolbar-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.circuit-btn-danger:hover:not(:disabled) {
+  background-color: var(--background-modifier-error) !important;
+  color: var(--text-error) !important;
+}
+
+/* Modal Canvas */
+.circuit-editor-canvas-wrap {
+  flex: 1;
+  min-height: 420px;
+  max-height: 60vh;
+  overflow: auto;
+  background-color: var(--background-primary-alt);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 16px;
+}
+
+.circuit-editor-svg {
+  background-color: var(--background-secondary);
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  user-select: none;
+}
+
+.circuit-comp-group {
+  transition: opacity 0.1s ease;
+}
+
+.circuit-pin-target {
+  transition: r 0.1s ease, fill 0.1s ease;
+}
+
+.circuit-pin-target:hover {
+  fill: var(--interactive-accent) !important;
+}
+
+/* Modal Footer */
+.circuit-editor-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 14px;
+  padding-top: 8px;
+  border-top: 1px solid var(--background-modifier-border);
+}
+
+.circuit-footer-info {
+  font-size: 0.85em;
+  color: var(--text-muted);
+}
+
+.circuit-footer-buttons {
+  display: flex;
+  gap: 8px;
+}
+
