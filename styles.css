@@ -1,24 +1,58 @@
+/* Markdown Code Block Host Reset */
+.circuit-codeblock-host,
+.block-language-circuit-json {
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+/* Natural block margin in reading view */
+.markdown-rendered .block-language-circuit-json {
+  margin: 0.75em 0 !important;
+}
+
+/* In Live Preview, eliminate padding inside the hover box */
+.cm-embed-block:has(> .block-language-circuit-json),
+.cm-embed-block:has(.circuit-block-container) {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
 /* Note Render Container */
 .circuit-block-container {
   position: relative;
-  display: inline-block;
+  display: block;
   width: 100%;
-  margin: 1em 0;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
 .circuit-container {
-  overflow: auto;
-  padding: 12px;
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  max-height: min(65vh, 460px);
+  padding: 0;
   background-color: var(--background-secondary);
   border-radius: 8px;
   border: 1px solid var(--background-modifier-border);
+  user-select: none;
+  box-sizing: border-box;
 }
 
 .circuit-svg {
   display: block;
   font-family: var(--font-monospace);
+  width: 100%;
   max-width: 100%;
-  height: auto;
+  height: 100%;
+  cursor: grab;
+  user-select: none;
+}
+
+.circuit-svg.is-panning {
+  cursor: grabbing !important;
 }
 
 .circuit-error {
@@ -34,12 +68,17 @@
 .circuit-block-toolbar {
   position: absolute;
   top: 8px;
-  right: 8px;
+  right: 12px;
   display: flex;
   gap: 6px;
   opacity: 0.75;
   transition: opacity 0.15s ease-in-out;
   z-index: 5;
+}
+
+/* In Live Preview, leave room for Obsidian's native </> codeblock edit button */
+.cm-embed-block .circuit-block-toolbar {
+  right: 38px;
 }
 
 .circuit-block-container:hover .circuit-block-toolbar {
@@ -70,13 +109,25 @@
 .circuit-editor-modal {
   width: 90vw !important;
   max-width: 960px !important;
+  height: 90vh !important;
   max-height: 90vh !important;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
   padding: 16px 20px !important;
 }
 
+.circuit-editor-modal .modal-content,
+.circuit-editor-content {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
 .circuit-editor-header {
+  flex: 0 0 auto;
   margin-bottom: 12px;
 }
 
@@ -94,6 +145,7 @@
 /* Modal Toolbar */
 .circuit-editor-toolbar {
   display: flex;
+  flex: 0 0 auto;
   flex-wrap: wrap;
   align-items: center;
   gap: 8px;
@@ -157,40 +209,93 @@
 
 /* Modal Canvas */
 .circuit-editor-canvas-wrap {
-  flex: 1;
-  min-height: 420px;
-  max-height: 60vh;
-  overflow: auto;
-  background-color: var(--background-primary-alt);
+  flex: 1 1 420px;
+  min-height: 250px;
+  max-height: none;
+  overflow: hidden;
+  position: relative;
+  background-color: var(--background-secondary);
   border: 1px solid var(--background-modifier-border);
   border-radius: 6px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 16px;
+  padding: 0;
+  user-select: none;
 }
 
 .circuit-editor-svg {
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
   background-color: var(--background-secondary);
   border-radius: 6px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  outline: none;
   user-select: none;
+}
+
+.circuit-editor-svg.is-space-pressed {
+  cursor: grab !important;
+}
+
+.circuit-editor-svg.is-panning {
+  cursor: grabbing !important;
 }
 
 .circuit-comp-group {
   transition: opacity 0.1s ease;
 }
 
-.circuit-pin-target {
-  transition: r 0.1s ease, fill 0.1s ease;
+.circuit-comp-group:hover > rect,
+.circuit-comp-group:hover > circle.circuit-comp-hit {
+  stroke: var(--text-accent);
+  stroke-width: 1px;
 }
 
-.circuit-pin-target:hover {
+.circuit-comp-group.is-selected > rect,
+.circuit-comp-group.is-selected > circle.circuit-comp-hit {
+  stroke: var(--text-accent) !important;
+  stroke-width: 1.5px !important;
+}
+
+.circuit-pin-wrap {
+  cursor: crosshair;
+}
+
+.circuit-pin-target {
+  transition: r 0.15s ease, fill 0.15s ease;
+}
+
+.circuit-pin-wrap:hover .circuit-pin-target {
+  r: 6.5px;
   fill: var(--interactive-accent) !important;
+}
+
+.circuit-ghost-comp,
+.circuit-ghost-wire,
+.circuit-ghost-loop {
+  pointer-events: none;
+}
+
+.circuit-loop-symbol {
+  cursor: pointer;
+  transition: opacity 0.1s ease;
+}
+
+.circuit-loop-symbol:hover path {
+  stroke: var(--interactive-accent) !important;
+  stroke-width: 2.2px !important;
+}
+
+.circuit-loop-symbol.is-selected path {
+  stroke: var(--interactive-accent) !important;
+  stroke-width: 2.6px !important;
+}
+
+.circuit-wire-current-badge {
+  user-select: none;
 }
 
 /* Modal Footer */
 .circuit-editor-footer {
+  flex: 0 0 auto;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -208,4 +313,239 @@
   display: flex;
   gap: 8px;
 }
+
+/* Floating Zoom & Navigation Controls on Canvas */
+.circuit-canvas-controls {
+  position: absolute;
+  bottom: 14px;
+  left: 14px;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background-color: var(--background-primary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 20px;
+  padding: 3px 6px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  opacity: 0.88;
+  transition: opacity 0.15s ease-in-out;
+}
+
+.circuit-block-container:hover .circuit-canvas-controls,
+.circuit-editor-canvas-wrap:hover .circuit-canvas-controls {
+  opacity: 1;
+}
+
+.circuit-canvas-ctrl-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  background: transparent;
+  border: none;
+  color: var(--text-normal);
+  border-radius: 12px;
+  padding: 3px 8px;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.circuit-canvas-ctrl-btn:hover {
+  background-color: var(--background-modifier-hover);
+  color: var(--text-accent);
+}
+
+.circuit-canvas-ctrl-btn.circuit-save-view-btn {
+  color: var(--interactive-accent);
+  font-weight: 600;
+}
+
+.circuit-canvas-ctrl-btn.circuit-save-view-btn:hover {
+  background-color: var(--interactive-accent);
+  color: var(--text-on-accent);
+}
+
+.circuit-zoom-label {
+  font-variant-numeric: tabular-nums;
+  min-width: 42px;
+  text-align: center;
+}
+
+/* Text Component Markdown & LaTeX Center Alignment */
+.circuit-markdown-text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  width: 100%;
+  height: 100%;
+  font-size: var(--circuit-font-size, 13px);
+  color: var(--text-normal);
+  line-height: 1.35;
+  user-select: none;
+  pointer-events: none;
+}
+
+.circuit-markdown-text p {
+  margin: 0;
+  text-align: center;
+}
+
+/* Inline CodeMirror text/LaTeX editor on canvas */
+.circuit-inline-editor-wrap {
+  min-width: 220px;
+  background-color: var(--background-primary);
+  border: 1.5px solid var(--interactive-accent);
+  border-radius: 6px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+  padding: 6px 8px;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  user-select: text !important;
+  -webkit-user-select: text !important;
+}
+
+.circuit-inline-editor-wrap .cm-editor {
+  outline: none;
+  background: transparent;
+  font-size: 13px;
+  font-family: var(--font-text);
+  color: var(--text-normal);
+  min-height: 36px;
+  max-height: 200px;
+  user-select: text !important;
+  -webkit-user-select: text !important;
+  cursor: text;
+}
+
+.circuit-inline-editor-wrap .cm-scroller {
+  overflow: auto;
+  line-height: 1.4;
+  font-family: var(--font-text);
+  user-select: text !important;
+  -webkit-user-select: text !important;
+}
+
+.circuit-inline-editor-wrap .cm-content {
+  padding: 2px 4px;
+  caret-color: var(--text-normal);
+  font-family: var(--font-text);
+  user-select: text !important;
+  -webkit-user-select: text !important;
+  cursor: text;
+}
+
+.circuit-inline-editor-wrap .cm-line {
+  padding: 0;
+  font-family: var(--font-text);
+  user-select: text !important;
+  -webkit-user-select: text !important;
+}
+
+/* LaTeX Suite Math Syntax Highlights */
+.circuit-inline-editor-wrap .cm-math {
+  color: var(--text-accent);
+}
+
+.circuit-inline-editor-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  margin-top: 4px;
+  padding-top: 4px;
+  border-top: 1px solid var(--background-modifier-border);
+}
+
+.circuit-inline-editor-btn-cancel {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 2px 6px !important;
+  font-size: 11px;
+  color: var(--text-muted);
+  cursor: pointer;
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.circuit-inline-editor-btn-cancel:hover {
+  color: var(--text-accent) !important;
+  text-decoration: underline !important;
+}
+
+.circuit-inline-editor-overlay {
+  position: absolute;
+  z-index: 50;
+  pointer-events: all;
+  user-select: text !important;
+  -webkit-user-select: text !important;
+}
+
+.circuit-inline-editor-btn-save {
+  background-color: var(--interactive-accent) !important;
+  color: var(--text-on-accent) !important;
+  border: none !important;
+  border-radius: 4px !important;
+  padding: 2px 10px !important;
+  font-size: 11px !important;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+
+.circuit-inline-editor-btn-save:hover {
+  opacity: 0.85;
+}
+
+.circuit-inline-editor-tip {
+  font-size: 10px;
+  color: var(--text-faint);
+  margin-right: auto;
+  user-select: none;
+}
+
+/* In-editor Live Preview KaTeX Math Widget */
+.circuit-live-math-inline {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 4px;
+  margin: 0 1px;
+  background-color: var(--background-modifier-hover);
+  border-radius: 3px;
+  cursor: pointer;
+  vertical-align: middle;
+}
+
+.circuit-live-math-inline:hover {
+  background-color: var(--background-modifier-border);
+}
+
+.circuit-live-math-block {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 8px;
+  margin: 4px 0;
+  background-color: var(--background-modifier-hover);
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.circuit-live-math-block:hover {
+  background-color: var(--background-modifier-border);
+}
+
+.circuit-live-symbol {
+  color: var(--text-accent);
+  font-weight: 500;
+  padding: 0 1px;
+  cursor: text;
+}
+
 

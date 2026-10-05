@@ -1,4 +1,4 @@
-﻿import esbuild from "esbuild";
+import esbuild from "esbuild";
 import process from "process";
 import fs from "fs";
 import { builtinModules } from "module";
@@ -35,24 +35,31 @@ const context = await esbuild.context({
   sourcemap: prod ? false : "inline",
   treeShaking: true,
   minify: prod,
-  outfile: prod ? "dist/main.js" : "main.js",
+  outfile: "main.js",
 });
 
 if (prod) {
   await context.rebuild();
 
-  // Copy manifest.json to dist
+  // Copy distribution files to dist/
+  fs.copyFileSync("main.js", "dist/main.js");
   fs.copyFileSync("manifest.json", "dist/manifest.json");
-
-  // Copy styles.css to dist if present
   if (fs.existsSync("styles.css")) {
     fs.copyFileSync("styles.css", "dist/styles.css");
   }
 
-  // Synchronize main.js in root for local vault development
-  fs.copyFileSync("dist/main.js", "main.js");
+  // Also sync directly to active Obsidian vault plugin dir if present
+  const vaultPluginDir = "C:\\Users\\matma\\Documents\\uni\\Obsidian\\uni\\.obsidian\\plugins\\obsidian-circuit";
+  if (fs.existsSync(vaultPluginDir)) {
+    fs.copyFileSync("main.js", `${vaultPluginDir}/main.js`);
+    fs.copyFileSync("manifest.json", `${vaultPluginDir}/manifest.json`);
+    if (fs.existsSync("styles.css")) {
+      fs.copyFileSync("styles.css", `${vaultPluginDir}/styles.css`);
+    }
+    console.log("Synchronized to Obsidian vault plugin directory:", vaultPluginDir);
+  }
 
-  console.log("Production build successfully generated in dist/ (main.js, manifest.json, styles.css)");
+  console.log("Build successfully generated in root and dist/ (main.js, manifest.json, styles.css)");
   process.exit(0);
 } else {
   await context.watch();

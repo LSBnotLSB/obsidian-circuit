@@ -2,8 +2,8 @@
   "id": "circuit",
   "name": "Circuit",
   "version": "0.1.0",
-  "minAppVersion": "1.1.0",
-  "description": "Renderizza schemi elettrici SVG a partire da blocchi JSON strutturati.",
+  "minAppVersion": "1.4.4",
+  "description": "Render SVG circuit schematics from structured JSON blocks with an interactive visual editor.",
   "author": "zMattew_",
   "isDesktopOnly": false
 }

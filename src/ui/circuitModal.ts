@@ -1,15 +1,26 @@
-﻿import { App, Modal } from 'obsidian';
-import { CircuitComponent, CircuitData, EditorTool } from '../types';
+import { App, Component, Modal } from 'obsidian';
+import {
+  CircuitComponent,
+  CircuitConnection,
+  CircuitData,
+  CircuitLoop,
+  EditorTool,
+  SelectionType,
+} from '../types';
 import { CircuitCanvas } from './circuitCanvas';
 import { CircuitToolbar } from './circuitToolbar';
 import { ComponentPropertiesModal } from './componentPropertiesModal';
+import { ConnectionPropertiesModal } from './connectionPropertiesModal';
+import { LoopPropertiesModal } from './loopPropertiesModal';
 
 export class CircuitModal extends Modal {
   private data: CircuitData;
   private onSave: (savedData: CircuitData) => void;
+  private modalComponent = new Component();
 
   private canvas: CircuitCanvas | null = null;
   private toolbar: CircuitToolbar | null = null;
+  private infoEl: HTMLElement | null = null;
 
   // History stack for Undo / Redo
   private history: string[] = [];
@@ -22,13 +33,16 @@ export class CircuitModal extends Modal {
     this.data = JSON.parse(JSON.stringify(initialData)) as CircuitData;
     if (!this.data.components) this.data.components = [];
     if (!this.data.connections) this.data.connections = [];
+    if (!this.data.loops) this.data.loops = [];
     this.onSave = onSave;
     this.pushHistory();
   }
 
   override onOpen(): void {
+    this.modalComponent.load();
     const { contentEl, modalEl } = this;
     contentEl.empty();
+    contentEl.addClass('circuit-editor-content');
     modalEl.addClass('circuit-editor-modal');
 
     // Header
@@ -36,7 +50,7 @@ export class CircuitModal extends Modal {
     headerEl.createEl('h2', { text: 'Circuit schematic editor' });
     headerEl.createEl('p', {
       cls: 'circuit-editor-subtitle',
-      text: 'Click component in toolbar to place • Click pins to connect wires • Press R to rotate • Double-click to edit',
+      text: 'Click component to place (R to rotate preview) • Click or drag pins to wire • Left-click for context menu',
     });
 
     // Toolbar Container
@@ -46,7 +60,11 @@ export class CircuitModal extends Modal {
         this.toolbar?.setActiveTool(tool);
       },
       onRotate: () => {
-        this.canvas?.rotateSelected();
+        if (this.canvas?.hasGhostTool()) {
+          this.canvas.rotateGhost();
+        } else {
+          this.canvas?.rotateSelected();
+        }
       },
       onDelete: () => {
         this.canvas?.deleteSelected();
@@ -59,65 +77,108 @@ export class CircuitModal extends Modal {
       },
       onToggleGrid: () => {
         this.data.grid = this.data.grid === false ? true : false;
-        this.canvas?.setData(this.data);
+        this.pushHistory();
+        this.refreshEditor();
       },
       onClear: () => {
         this.data.components = [];
         this.data.connections = [];
+        this.data.loops = [];
         this.pushHistory();
-        this.canvas?.setData(this.data);
+        this.refreshEditor();
+      },
+      onSaveView: () => {
+        this.canvas?.saveView();
+      },
+      onFitView: () => {
+        this.canvas?.fitView();
       },
     });
 
     // Canvas Container
-    this.canvas = new CircuitCanvas(contentEl, this.data, {
-      onSelectionChange: (hasSelection: boolean) => {
-        this.toolbar?.setHasSelection(hasSelection);
+    this.canvas = new CircuitCanvas(
+      contentEl,
+      this.data,
+      {
+        onSelectionChange: (type: SelectionType) => {
+          this.toolbar?.setSelectionState(type);
+        },
+        onToolChange: (tool: EditorTool) => {
+          this.toolbar?.setActiveTool(tool);
+        },
+        onEditComponent: (comp: CircuitComponent) => {
+          if (comp.type === 'text') {
+            this.canvas?.startInlineTextEdit(comp);
+          } else {
+            new ComponentPropertiesModal(this.app, comp, (updated) => {
+              this.canvas?.updateComponent(updated);
+            }).open();
+          }
+        },
+        onEditConnection: (conn: CircuitConnection) => {
+          const idx = this.data.connections?.findIndex((c) => c === conn) ?? -1;
+          if (idx !== -1) {
+            new ConnectionPropertiesModal(this.app, conn, (updated) => {
+              this.canvas?.updateConnection(idx, updated);
+            }).open();
+          }
+        },
+        onEditLoop: (loop: CircuitLoop) => {
+          new LoopPropertiesModal(this.app, loop, (updated) => {
+            this.canvas?.updateLoop(updated);
+          }).open();
+        },
+        onDataChange: () => {
+          this.pushHistory();
+          this.updateFooterInfo();
+        },
       },
-      onEditComponent: (comp: CircuitComponent) => {
-        new ComponentPropertiesModal(this.app, comp, (updated) => {
-          this.canvas?.updateComponent(updated);
-        }).open();
-      },
-      onDataChange: () => {
-        this.pushHistory();
-      },
-    });
+      this.app,
+      this.modalComponent
+    );
+    this.toolbar.setGridEnabled(this.data.grid !== false);
 
     // Footer actions
     const footerEl = contentEl.createDiv({ cls: 'circuit-editor-footer' });
 
-    const infoSpan = footerEl.createSpan({ cls: 'circuit-footer-info' });
-    this.updateFooterInfo(infoSpan);
+    this.infoEl = footerEl.createSpan({ cls: 'circuit-footer-info' });
+    this.updateFooterInfo();
 
     const btnGroup = footerEl.createDiv({ cls: 'circuit-footer-buttons' });
 
     const cancelBtn = btnGroup.createEl('button', {
       text: 'Cancel',
       cls: 'mod-cancel',
+      attr: { type: 'button' },
     });
-    cancelBtn.onclick = () => {
+    cancelBtn.addEventListener('click', () => {
       this.close();
-    };
+    });
 
     const saveBtn = btnGroup.createEl('button', {
       text: 'Save to note',
       cls: 'mod-cta',
+      attr: { type: 'button' },
     });
-    saveBtn.onclick = () => {
+    saveBtn.addEventListener('click', () => {
+      if (this.canvas?.isEditingText()) {
+        this.canvas.finishInlineTextEdit();
+      }
       this.onSave(this.data);
       this.close();
-    };
+    });
 
     // Keyboard Shortcuts
     this.bindKeyboardShortcuts();
   }
 
   override onClose(): void {
+    this.modalComponent.unload();
     const { contentEl } = this;
     contentEl.empty();
     this.canvas = null;
     this.toolbar = null;
+    this.infoEl = null;
   }
 
   private pushHistory(): void {
@@ -140,7 +201,7 @@ export class CircuitModal extends Modal {
       const previous = this.history[this.history.length - 1];
       if (previous) {
         this.data = JSON.parse(previous) as CircuitData;
-        this.canvas?.setData(this.data);
+        this.refreshEditor();
       }
     }
   }
@@ -151,50 +212,116 @@ export class CircuitModal extends Modal {
       if (next) {
         this.history.push(next);
         this.data = JSON.parse(next) as CircuitData;
-        this.canvas?.setData(this.data);
+        this.refreshEditor();
       }
     }
   }
 
-  private updateFooterInfo(infoEl: HTMLElement): void {
+  private refreshEditor(): void {
+    this.canvas?.setData(this.data);
+    this.toolbar?.setGridEnabled(this.data.grid !== false);
+    this.updateFooterInfo();
+  }
+
+  private updateFooterInfo(): void {
+    if (!this.infoEl) return;
     const compCount = this.data.components?.length || 0;
     const connCount = this.data.connections?.length || 0;
-    infoEl.setText(`${compCount} components, ${connCount} connections`);
+    const loopCount = this.data.loops?.length || 0;
+    const loopStr = loopCount > 0 ? `, ${loopCount} loops` : '';
+    this.infoEl.setText(`${compCount} components, ${connCount} connections${loopStr}`);
   }
 
   private bindKeyboardShortcuts(): void {
-    this.scope.register([], 'r', () => {
-      this.canvas?.rotateSelected();
+    const isTyping = (): boolean => {
+      const active = document.activeElement;
+      if (!active) return Boolean(this.canvas?.isEditingText());
+      const tag = active.tagName.toLowerCase();
+      return (
+        tag === 'input' ||
+        tag === 'textarea' ||
+        (active as HTMLElement).isContentEditable ||
+        Boolean(active.closest('.cm-editor')) ||
+        Boolean(this.canvas?.isEditingText())
+      );
+    };
+
+    const handleRotate = (): boolean | void => {
+      if (isTyping()) return;
+      if (this.canvas?.hasGhostTool()) {
+        this.canvas.rotateGhost();
+      } else {
+        this.canvas?.rotateSelected();
+      }
       return false;
-    });
+    };
+
+    this.scope.register([], 'r', handleRotate);
+    this.scope.register([], 'R', handleRotate);
+    this.scope.register(['Shift'], 'r', handleRotate);
+    this.scope.register(['Shift'], 'R', handleRotate);
 
     this.scope.register([], 'Delete', () => {
+      if (isTyping()) return;
       this.canvas?.deleteSelected();
       return false;
     });
 
     this.scope.register([], 'Backspace', () => {
+      if (isTyping()) return;
       this.canvas?.deleteSelected();
       return false;
     });
 
     this.scope.register(['Mod'], 'z', () => {
+      if (this.canvas?.isEditingText()) {
+        this.canvas.undoInlineText();
+        return false;
+      }
+      if (isTyping()) return;
       this.undo();
       return false;
     });
 
     this.scope.register(['Mod'], 'y', () => {
+      if (this.canvas?.isEditingText()) {
+        this.canvas.redoInlineText();
+        return false;
+      }
+      if (isTyping()) return;
       this.redo();
       return false;
     });
 
     this.scope.register(['Mod', 'Shift'], 'z', () => {
+      if (this.canvas?.isEditingText()) {
+        this.canvas.redoInlineText();
+        return false;
+      }
+      if (isTyping()) return;
       this.redo();
       return false;
     });
 
-    this.scope.register(['Mod'], 's', () => {
+    this.scope.register(['Mod'], 's', (evt: KeyboardEvent) => {
+      evt.preventDefault();
+      if (this.canvas?.isEditingText()) {
+        this.canvas.finishInlineTextEdit();
+      }
       this.onSave(this.data);
+      this.close();
+      return false;
+    });
+
+    this.scope.register([], 'Escape', () => {
+      if (this.canvas?.isEditingText()) {
+        this.canvas.cancelInlineTextEdit();
+        return false;
+      }
+      if (this.canvas?.hasActiveAction()) {
+        this.canvas.cancelActiveAction();
+        return false;
+      }
       this.close();
       return false;
     });

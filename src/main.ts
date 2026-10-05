@@ -4,12 +4,12 @@ import {
   MarkdownView,
   Notice,
   Plugin,
+  setIcon,
   TFile,
 } from 'obsidian';
 import { CircuitData } from './types';
+import { CircuitEmbeddedViewer } from './ui/circuitEmbeddedViewer';
 import { CircuitModal } from './ui/circuitModal';
-import { drawComponentSymbol } from './utils/drawSymbols';
-import { buildPinMap, generateWirePath } from './utils/geometry';
 
 const DEFAULT_CIRCUIT_DATA: CircuitData = {
   width: 600,
@@ -35,6 +35,7 @@ export default class CircuitRendererPlugin extends Plugin {
     this.registerMarkdownCodeBlockProcessor(
       'circuit-json',
       (source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) => {
+        el.addClass('circuit-codeblock-host');
         let data: CircuitData;
         try {
           data = JSON.parse(source) as CircuitData;
@@ -45,11 +46,14 @@ export default class CircuitRendererPlugin extends Plugin {
 
           const editBtn = errorContainer.createEl('button', {
             cls: 'circuit-block-btn',
-            text: '✏️ Open Visual Editor',
           });
+          setIcon(editBtn, 'pencil');
+          editBtn.createSpan({ text: 'Open Visual Editor' });
           editBtn.onclick = () => {
+            const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
+            const scrollInfo = this.captureScrollInfo(activeView);
             new CircuitModal(this.app, DEFAULT_CIRCUIT_DATA, (savedData) => {
-              this.saveCircuitData(source, savedData, el, ctx);
+              this.saveCircuitData(source, savedData, el, ctx, scrollInfo);
             }).open();
           };
           return;
@@ -63,29 +67,42 @@ export default class CircuitRendererPlugin extends Plugin {
 
         const editBtn = toolbar.createEl('button', {
           cls: 'circuit-block-btn',
-          text: '✏️ Edit',
           attr: { title: 'Edit circuit in visual editor' },
         });
+        setIcon(editBtn, 'pencil');
+        editBtn.createSpan({ text: 'Edit' });
         editBtn.onclick = () => {
+          const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
+          const scrollInfo = this.captureScrollInfo(activeView);
           new CircuitModal(this.app, data, (savedData) => {
-            this.saveCircuitData(source, savedData, el, ctx);
+            this.saveCircuitData(source, savedData, el, ctx, scrollInfo);
           }).open();
         };
 
         const copyBtn = toolbar.createEl('button', {
           cls: 'circuit-block-btn',
-          text: '📋 Copy',
           attr: { title: 'Copy JSON to clipboard' },
         });
+        setIcon(copyBtn, 'copy');
+        copyBtn.createSpan({ text: 'Copy' });
         copyBtn.onclick = () => {
           void navigator.clipboard.writeText(JSON.stringify(data, null, 2)).then(() => {
             new Notice('Circuit JSON copied to clipboard');
           });
         };
 
-        // Render SVG schema
-        const svgContainer = this.renderCircuitSVG(data);
-        wrapper.appendChild(svgContainer);
+        // Render interactive embedded circuit viewer with navigation controls
+        new CircuitEmbeddedViewer(
+          wrapper,
+          data,
+          this.app,
+          this,
+          (updatedData) => {
+            const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
+            const scrollInfo = this.captureScrollInfo(activeView);
+            this.saveCircuitData(source, updatedData, el, ctx, scrollInfo);
+          }
+        );
       }
     );
 
@@ -103,117 +120,75 @@ export default class CircuitRendererPlugin extends Plugin {
   }
 
   renderCircuitSVG(data: CircuitData): HTMLElement {
-    const width = data.width || 600;
-    const height = data.height || 400;
+    const tempDiv = createDiv();
+    const viewer = new CircuitEmbeddedViewer(tempDiv, data, this.app, this);
+    return viewer.getContainerEl();
+  }
 
-    const container = createDiv({ cls: 'circuit-container' });
-
-    const svg = container.createSvg('svg', {
-      cls: 'circuit-svg',
-      attr: {
-        width: String(width),
-        height: String(height),
-        viewBox: `0 0 ${width} ${height}`,
-      },
-    });
-
-    // Optional grid
-    if (data.grid) {
-      const defs = svg.createSvg('defs');
-      const pattern = defs.createSvg('pattern', {
-        attr: {
-          id: 'circuit-grid',
-          width: '20',
-          height: '20',
-          patternUnits: 'userSpaceOnUse',
-        },
-      });
-      pattern.createSvg('circle', {
-        attr: {
-          cx: '2',
-          cy: '2',
-          r: '1',
-          fill: 'var(--text-faint)',
-          opacity: '0.35',
-        },
-      });
-      svg.createSvg('rect', {
-        attr: {
-          width: '100%',
-          height: '100%',
-          fill: 'url(#circuit-grid)',
-        },
-      });
-    }
-
-    const pinCoords = buildPinMap(data.components || []);
-
-    // 1. Render components
-    if (Array.isArray(data.components)) {
-      for (const comp of data.components) {
-        const rot = comp.rotation || 0;
-        const g = svg.createSvg('g', {
-          attr: {
-            transform: `translate(${comp.x}, ${comp.y}) rotate(${rot})`,
-            stroke: 'var(--text-normal)',
-            'stroke-width': '2',
-            fill: 'none',
-          },
-        });
-
-        drawComponentSymbol(g, comp);
-      }
-    }
-
-    // 2. Render connections with orthogonal routing
-    if (Array.isArray(data.connections)) {
-      for (const conn of data.connections) {
-        const p1 = pinCoords.get(conn.from);
-        const p2 = pinCoords.get(conn.to);
-        if (!p1 || !p2) continue;
-
-        const fromComp = data.components?.find((c) => conn.from.startsWith(c.id));
-        const d = generateWirePath(p1, p2, fromComp, conn.waypoints);
-
-        svg.createSvg('path', {
-          attr: {
-            d,
-            stroke: conn.color || 'var(--text-accent)',
-            'stroke-width': '2',
-            fill: 'none',
-            'stroke-linejoin': 'round',
-            'stroke-linecap': 'round',
-          },
-        });
-
-        // Terminals / junctions
-        for (const p of [p1, p2]) {
-          svg.createSvg('circle', {
-            attr: {
-              cx: String(p.x),
-              cy: String(p.y),
-              r: '3',
-              fill: 'var(--text-accent)',
-            },
-          });
-        }
-      }
-    }
-
-    return container;
+  private captureScrollInfo(view: MarkdownView | null): {
+    subViewScroll: number | undefined;
+    editorScroll: { top: number; left: number } | null;
+    scrollerTop: number | undefined;
+  } | null {
+    if (!view) return null;
+    const scroller = view.contentEl.querySelector<HTMLElement>(
+      '.cm-scroller, .markdown-preview-view'
+    );
+    return {
+      subViewScroll:
+        typeof view.currentMode?.getScroll === 'function'
+          ? view.currentMode.getScroll()
+          : undefined,
+      editorScroll: view.editor ? view.editor.getScrollInfo() : null,
+      scrollerTop: scroller?.scrollTop,
+    };
   }
 
   private saveCircuitData(
     source: string,
     updatedData: CircuitData,
     el: HTMLElement,
-    ctx: MarkdownPostProcessorContext
+    ctx: MarkdownPostProcessorContext,
+    savedScrollInfo?: {
+      subViewScroll: number | undefined;
+      editorScroll: { top: number; left: number } | null;
+      scrollerTop: number | undefined;
+    } | null
   ): void {
     const formattedJson = JSON.stringify(updatedData, null, 2);
     const newCodeBlock = `\`\`\`circuit-json\n${formattedJson}\n\`\`\``;
 
     const section = ctx.getSectionInfo(el);
     const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
+
+    const restoreScroll = () => {
+      if (!activeView) return;
+      const targetSubViewScroll =
+        savedScrollInfo?.subViewScroll ??
+        (typeof activeView.currentMode?.getScroll === 'function'
+          ? activeView.currentMode.getScroll()
+          : undefined);
+      const targetEditorScroll =
+        savedScrollInfo?.editorScroll ??
+        (activeView.editor ? activeView.editor.getScrollInfo() : null);
+      const targetScrollerTop = savedScrollInfo?.scrollerTop;
+
+      const scrollerEl = activeView.contentEl.querySelector<HTMLElement>(
+        '.cm-scroller, .markdown-preview-view'
+      );
+      if (targetScrollerTop !== undefined && scrollerEl) {
+        scrollerEl.scrollTop = targetScrollerTop;
+      }
+      if (
+        targetSubViewScroll !== undefined &&
+        typeof activeView.currentMode?.applyScroll === 'function'
+      ) {
+        activeView.currentMode.applyScroll(targetSubViewScroll);
+      }
+      if (targetEditorScroll && activeView.editor) {
+        activeView.editor.scrollTo(targetEditorScroll.left, targetEditorScroll.top);
+      }
+    };
 
     if (section && activeView && activeView.editor) {
       const editor = activeView.editor;
@@ -222,6 +197,15 @@ export default class CircuitRendererPlugin extends Plugin {
         { line: section.lineStart, ch: 0 },
         { line: section.lineEnd, ch: editor.getLine(section.lineEnd).length }
       );
+      editor.setCursor({ line: section.lineStart, ch: 0 });
+
+      // Apply across multiple frames to counter CodeMirror focus shifts or layout recalculations
+      restoreScroll();
+      window.requestAnimationFrame(restoreScroll);
+      window.setTimeout(restoreScroll, 25);
+      window.setTimeout(restoreScroll, 80);
+      window.setTimeout(restoreScroll, 200);
+
       new Notice('Circuit updated in note');
       return;
     }
@@ -241,6 +225,11 @@ export default class CircuitRendererPlugin extends Plugin {
           return content;
         })
         .then(() => {
+          restoreScroll();
+          window.requestAnimationFrame(restoreScroll);
+          window.setTimeout(restoreScroll, 40);
+          window.setTimeout(restoreScroll, 120);
+          window.setTimeout(restoreScroll, 250);
           new Notice('Circuit updated in note');
         });
     }

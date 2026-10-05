@@ -17,9 +17,9 @@ export default [
     ignores: [
       "dist/**",
       "node_modules/**",
-      "main.js",
       "esbuild.config.mjs",
       "eslint.config.mjs",
+      "main.js",
     ],
   },
 ];
