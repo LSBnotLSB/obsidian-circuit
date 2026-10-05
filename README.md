@@ -1,6 +1,6 @@
 # Circuit Renderer and Editor for Obsidian
 
-An Obsidian plugin for rendering and editing electrical circuit schematics stored as JSON in `circuit-json` code blocks.
+An Obsidian plugin for rendering and editing electrical circuit schematics stored as JSON in `circuit` code blocks.
 
 ## Features
 
@@ -29,10 +29,10 @@ The editor supports these component types:
 
 ## Use in a note
 
-Add a `circuit-json` code block to a Markdown note:
+Add a `circuit` code block to a Markdown note:
 
 ````markdown
-```circuit-json
+```circuit
 {
   "width": 600,
   "height": 400,
@@ -116,10 +116,10 @@ The toolbar also provides selection, component tools, rotate, delete, undo, redo
 
 1. Build the plugin with `npm run build`, or download `main.js`, `manifest.json`, and `styles.css` from the release.
 2. Create `.obsidian/plugins/obsidian-circuit/` in your vault if it does not already exist.
-3. Copy the three plugin files into that folder. The production build places installable copies in `dist/`.
+3. Copy `dist/main.js`, `dist/manifest.json`, and `dist/styles.css` into that folder.
 4. In Obsidian, open Settings, then Community plugins, and enable Circuit.
 
-The production build also writes `main.js` in the repository root. The build script additionally copies the plugin files to a local vault directory when the configured path in `esbuild.config.mjs` exists; review that setting before building in another environment.
+The build writes the JavaScript bundle and installable plugin files to `dist/`; it does not create `main.js` in the repository root. If the configured local vault plugin directory exists, the production build also copies the generated plugin files there.
 
 ## Development
 
@@ -132,7 +132,7 @@ npm run dev
 npm run build
 ```
 
-`npm run dev` watches the source and writes a development bundle to the repository root. `npm run build` runs ESLint and creates a minified production bundle and installable plugin files in `dist/`.
+`npm run dev` watches the source and writes a development bundle to `dist/main.js`. `npm run build` runs ESLint and creates a minified production bundle and installable plugin files in `dist/`.
 
 ## License
 

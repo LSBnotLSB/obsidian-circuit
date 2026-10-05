@@ -1,17 +1,17 @@
 /* Markdown Code Block Host Reset */
 .circuit-codeblock-host,
-.block-language-circuit-json {
+.block-language-circuit {
   padding: 0 !important;
   margin: 0 !important;
 }
 
 /* Natural block margin in reading view */
-.markdown-rendered .block-language-circuit-json {
+.markdown-rendered .block-language-circuit {
   margin: 0.75em 0 !important;
 }
 
 /* In Live Preview, eliminate padding inside the hover box */
-.cm-embed-block:has(> .block-language-circuit-json),
+.cm-embed-block:has(> .block-language-circuit),
 .cm-embed-block:has(.circuit-block-container) {
   padding-top: 0 !important;
   padding-bottom: 0 !important;

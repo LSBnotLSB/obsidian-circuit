@@ -33,7 +33,7 @@ export default class CircuitRendererPlugin extends Plugin {
   override onload(): void {
     // Register Code Block Processor
     this.registerMarkdownCodeBlockProcessor(
-      'circuit-json',
+      'circuit',
       (source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) => {
         el.addClass('circuit-codeblock-host');
         let data: CircuitData;
@@ -113,7 +113,7 @@ export default class CircuitRendererPlugin extends Plugin {
       editorCallback: (editor: Editor) => {
         new CircuitModal(this.app, DEFAULT_CIRCUIT_DATA, (savedData) => {
           const jsonStr = JSON.stringify(savedData, null, 2);
-          editor.replaceSelection(`\`\`\`circuit-json\n${jsonStr}\n\`\`\`\n`);
+          editor.replaceSelection(`\`\`\`circuit\n${jsonStr}\n\`\`\`\n`);
         }).open();
       },
     });
@@ -156,7 +156,7 @@ export default class CircuitRendererPlugin extends Plugin {
     } | null
   ): void {
     const formattedJson = JSON.stringify(updatedData, null, 2);
-    const newCodeBlock = `\`\`\`circuit-json\n${formattedJson}\n\`\`\``;
+    const newCodeBlock = `\`\`\`circuit\n${formattedJson}\n\`\`\``;
 
     const section = ctx.getSectionInfo(el);
     const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
@@ -215,7 +215,7 @@ export default class CircuitRendererPlugin extends Plugin {
     if (file instanceof TFile) {
       void this.app.vault
         .process(file, (content) => {
-          const rawOldBlock = `\`\`\`circuit-json\n${source.trim()}\n\`\`\``;
+          const rawOldBlock = `\`\`\`circuit\n${source.trim()}\n\`\`\``;
           if (content.includes(rawOldBlock)) {
             return content.replace(rawOldBlock, newCodeBlock);
           }

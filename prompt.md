@@ -25,10 +25,10 @@ You are an expert electrical and electronics schematic reverse-engineering engin
 - "ground"
 
 ### OUTPUT FORMAT:
-You must output ONLY a valid JSON object wrapped inside a `circuit-json` Markdown code block. Do NOT include markdown summaries, explanations, or commentary.
+You must output ONLY a valid JSON object wrapped inside a `circuit` Markdown code block. Do NOT include markdown summaries, explanations, or commentary.
 
 Example output:
-```circuit-json
+```circuit
 {
   "width": 600,
   "height": 400,
