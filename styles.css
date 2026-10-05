@@ -1,20 +1,18 @@
 /* Markdown Code Block Host Reset */
-.circuit-codeblock-host,
-.block-language-circuit {
-  padding: 0 !important;
-  margin: 0 !important;
+.circuit-codeblock-host.block-language-circuit {
+  padding: 0;
+  margin: 0;
 }
 
 /* Natural block margin in reading view */
-.markdown-rendered .block-language-circuit {
-  margin: 0.75em 0 !important;
+.markdown-rendered .circuit-codeblock-host.block-language-circuit {
+  margin: 0.75em 0;
 }
 
 /* In Live Preview, eliminate padding inside the hover box */
-.cm-embed-block:has(> .block-language-circuit),
-.cm-embed-block:has(.circuit-block-container) {
-  padding-top: 0 !important;
-  padding-bottom: 0 !important;
+.cm-embed-block.circuit-embed-block {
+  padding-top: 0;
+  padding-bottom: 0;
 }
 
 /* Note Render Container */
@@ -52,7 +50,7 @@
 }
 
 .circuit-svg.is-panning {
-  cursor: grabbing !important;
+  cursor: grabbing;
 }
 
 .circuit-error {
@@ -106,18 +104,18 @@
 }
 
 /* Modal Window */
-.circuit-editor-modal {
-  width: 90vw !important;
-  max-width: 960px !important;
-  height: 90vh !important;
-  max-height: 90vh !important;
+.modal.circuit-editor-modal {
+  width: 90vw;
+  max-width: 960px;
+  height: 90vh;
+  max-height: 90vh;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  padding: 16px 20px !important;
+  padding: 16px 20px;
 }
 
-.circuit-editor-modal .modal-content,
+.modal.circuit-editor-modal .modal-content,
 .circuit-editor-content {
   display: flex;
   flex: 1 1 auto;
@@ -202,9 +200,9 @@
   cursor: not-allowed;
 }
 
-.circuit-btn-danger:hover:not(:disabled) {
-  background-color: var(--background-modifier-error) !important;
-  color: var(--text-error) !important;
+.circuit-editor-toolbar .circuit-toolbar-btn.circuit-btn-danger:hover:not(:disabled) {
+  background-color: var(--background-modifier-error);
+  color: var(--text-error);
 }
 
 /* Modal Canvas */
@@ -221,9 +219,9 @@
   user-select: none;
 }
 
-.circuit-editor-svg {
-  width: 100% !important;
-  height: 100% !important;
+.circuit-editor-canvas-wrap > svg.circuit-editor-svg {
+  width: 100%;
+  height: 100%;
   display: block;
   background-color: var(--background-secondary);
   border-radius: 6px;
@@ -231,12 +229,12 @@
   user-select: none;
 }
 
-.circuit-editor-svg.is-space-pressed {
-  cursor: grab !important;
+.circuit-editor-canvas-wrap > svg.circuit-editor-svg.is-space-pressed {
+  cursor: grab;
 }
 
-.circuit-editor-svg.is-panning {
-  cursor: grabbing !important;
+.circuit-editor-canvas-wrap > svg.circuit-editor-svg.is-panning {
+  cursor: grabbing;
 }
 
 .circuit-comp-group {
@@ -249,10 +247,10 @@
   stroke-width: 1px;
 }
 
-.circuit-comp-group.is-selected > rect,
-.circuit-comp-group.is-selected > circle.circuit-comp-hit {
-  stroke: var(--text-accent) !important;
-  stroke-width: 1.5px !important;
+.circuit-editor-svg .circuit-comp-group.is-selected > rect,
+.circuit-editor-svg .circuit-comp-group.is-selected > circle.circuit-comp-hit {
+  stroke: var(--text-accent);
+  stroke-width: 1.5px;
 }
 
 .circuit-pin-wrap {
@@ -263,9 +261,9 @@
   transition: r 0.15s ease, fill 0.15s ease;
 }
 
-.circuit-pin-wrap:hover .circuit-pin-target {
+.circuit-editor-svg .circuit-pin-wrap:hover .circuit-pin-target {
   r: 6.5px;
-  fill: var(--interactive-accent) !important;
+  fill: var(--interactive-accent);
 }
 
 .circuit-ghost-comp,
@@ -279,14 +277,14 @@
   transition: opacity 0.1s ease;
 }
 
-.circuit-loop-symbol:hover path {
-  stroke: var(--interactive-accent) !important;
-  stroke-width: 2.2px !important;
+.circuit-editor-svg .circuit-loop-symbol:hover path {
+  stroke: var(--interactive-accent);
+  stroke-width: 2.2px;
 }
 
-.circuit-loop-symbol.is-selected path {
-  stroke: var(--interactive-accent) !important;
-  stroke-width: 2.6px !important;
+.circuit-editor-svg .circuit-loop-symbol.is-selected path {
+  stroke: var(--interactive-accent);
+  stroke-width: 2.6px;
 }
 
 .circuit-wire-current-badge {
@@ -396,7 +394,7 @@
 }
 
 /* Inline CodeMirror text/LaTeX editor on canvas */
-.circuit-inline-editor-wrap {
+.circuit-editor-canvas-wrap .circuit-inline-editor-wrap {
   min-width: 220px;
   background-color: var(--background-primary);
   border: 1.5px solid var(--interactive-accent);
@@ -406,11 +404,11 @@
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
-  user-select: text !important;
-  -webkit-user-select: text !important;
+  user-select: text;
+  -webkit-user-select: text;
 }
 
-.circuit-inline-editor-wrap .cm-editor {
+.circuit-editor-canvas-wrap .circuit-inline-editor-wrap .cm-editor {
   outline: none;
   background: transparent;
   font-size: 13px;
@@ -418,33 +416,33 @@
   color: var(--text-normal);
   min-height: 36px;
   max-height: 200px;
-  user-select: text !important;
-  -webkit-user-select: text !important;
+  user-select: text;
+  -webkit-user-select: text;
   cursor: text;
 }
 
-.circuit-inline-editor-wrap .cm-scroller {
+.circuit-editor-canvas-wrap .circuit-inline-editor-wrap .cm-scroller {
   overflow: auto;
   line-height: 1.4;
   font-family: var(--font-text);
-  user-select: text !important;
-  -webkit-user-select: text !important;
+  user-select: text;
+  -webkit-user-select: text;
 }
 
-.circuit-inline-editor-wrap .cm-content {
+.circuit-editor-canvas-wrap .circuit-inline-editor-wrap .cm-content {
   padding: 2px 4px;
   caret-color: var(--text-normal);
   font-family: var(--font-text);
-  user-select: text !important;
-  -webkit-user-select: text !important;
+  user-select: text;
+  -webkit-user-select: text;
   cursor: text;
 }
 
-.circuit-inline-editor-wrap .cm-line {
+.circuit-editor-canvas-wrap .circuit-inline-editor-wrap .cm-line {
   padding: 0;
   font-family: var(--font-text);
-  user-select: text !important;
-  -webkit-user-select: text !important;
+  user-select: text;
+  -webkit-user-select: text;
 }
 
 /* LaTeX Suite Math Syntax Highlights */
@@ -462,11 +460,11 @@
   border-top: 1px solid var(--background-modifier-border);
 }
 
-.circuit-inline-editor-btn-cancel {
-  background: transparent !important;
-  border: none !important;
-  box-shadow: none !important;
-  padding: 2px 6px !important;
+.circuit-editor-canvas-wrap .circuit-inline-editor-btn-cancel {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 2px 6px;
   font-size: 11px;
   color: var(--text-muted);
   cursor: pointer;
@@ -474,26 +472,26 @@
   transition: color 0.15s ease;
 }
 
-.circuit-inline-editor-btn-cancel:hover {
-  color: var(--text-accent) !important;
-  text-decoration: underline !important;
+.circuit-editor-canvas-wrap .circuit-inline-editor-btn-cancel:hover {
+  color: var(--text-accent);
+  text-decoration: underline;
 }
 
-.circuit-inline-editor-overlay {
+.circuit-editor-canvas-wrap .circuit-inline-editor-overlay {
   position: absolute;
   z-index: 50;
   pointer-events: all;
-  user-select: text !important;
-  -webkit-user-select: text !important;
+  user-select: text;
+  -webkit-user-select: text;
 }
 
-.circuit-inline-editor-btn-save {
-  background-color: var(--interactive-accent) !important;
-  color: var(--text-on-accent) !important;
-  border: none !important;
-  border-radius: 4px !important;
-  padding: 2px 10px !important;
-  font-size: 11px !important;
+.circuit-editor-canvas-wrap .circuit-inline-editor-btn-save {
+  background-color: var(--interactive-accent);
+  color: var(--text-on-accent);
+  border: none;
+  border-radius: 4px;
+  padding: 2px 10px;
+  font-size: 11px;
   font-weight: 500;
   cursor: pointer;
   transition: opacity 0.15s ease;
@@ -547,5 +545,4 @@
   padding: 0 1px;
   cursor: text;
 }
-
 

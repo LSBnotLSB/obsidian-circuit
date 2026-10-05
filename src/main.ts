@@ -36,6 +36,7 @@ export default class CircuitRendererPlugin extends Plugin {
       'circuit',
       (source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) => {
         el.addClass('circuit-codeblock-host');
+        el.closest('.cm-embed-block')?.addClass('circuit-embed-block');
         let data: CircuitData;
         try {
           data = JSON.parse(source) as CircuitData;
