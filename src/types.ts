@@ -4,6 +4,7 @@ export type ComponentType =
   | 'capacitor'
   | 'inductor'
   | 'diode'
+  | 'memristor'
   // Independent sources
   | 'dc_source'
   | 'ac_source'
