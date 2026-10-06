@@ -31,6 +31,7 @@ const CATEGORIES: ComponentCategory[] = [
       { type: 'resistor', label: 'Resistore (R)' },
       { type: 'capacitor', label: 'Condensatore (C)' },
       { type: 'inductor', label: 'Induttore (L)' },
+      { type: 'memristor', label: 'Memristor (R)' },
       { type: 'diode', label: 'Diodo (D)' },
     ],
   },
