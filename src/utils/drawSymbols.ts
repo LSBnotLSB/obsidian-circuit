@@ -51,6 +51,17 @@ export function drawComponentSymbol(
       parent.createSvg('line', { attr: { x1: '18', y1: '0', x2: '30', y2: '0' } });
       break;
 
+    case 'memristor':
+      parent.createSvg('line', { attr: { x1: '-30', y1: '0', x2: '-15', y2: '0' } });
+      //TODO: Add thick line for polarisation 
+      parent.createSvg('line', { attr: { x1: '-16', y1: '9', x2: '-16', y2: '-9' } });
+      //TODO: Add box 
+      parent.createSvg('polygon', {attr: { points: '-15,9 -15,-9 16,9 16,-9', fill: 'none' },});
+      //TODO: Add line 
+      parent.createSvg('path', {attr: : { d: 'M -15 0 L -12 0 L -12 -4.5 L -4 -4.5 L -4 4.5 L 4 -4.5 L 12 -4.5 L 12 0 L16 0' },});
+      parent.createSvg('line', { attr: { x1: '16', y1: '0', x2: '30', y2: '0' } });
+      break;
+
     case 'dc_source':
       parent.createSvg('line', { attr: { x1: '-30', y1: '0', x2: '-4', y2: '0' } });
       parent.createSvg('line', { attr: { x1: '-4', y1: '-16', x2: '-4', y2: '16' } });
