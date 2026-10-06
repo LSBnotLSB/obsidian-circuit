@@ -52,14 +52,39 @@ export function drawComponentSymbol(
       break;
 
     case 'memristor':
+      // Terminal leads
       parent.createSvg('line', { attr: { x1: '-30', y1: '0', x2: '-15', y2: '0' } });
-      //TODO: Add thick line for polarisation 
-      parent.createSvg('line', { attr: { x1: '-16', y1: '9', x2: '-16', y2: '-9' } });
-      //TODO: Add box 
-      parent.createSvg('polygon', {attr: { points: '-15,9 -15,-9 16,9 16,-9', fill: 'none' },});
-      //TODO: Add line 
-      parent.createSvg('path', {attr: : { d: 'M -15 0 L -12 0 L -12 -4.5 L -4 -4.5 L -4 4.5 L 4 -4.5 L 12 -4.5 L 12 0 L16 0' },});
-      parent.createSvg('line', { attr: { x1: '16', y1: '0', x2: '30', y2: '0' } });
+      parent.createSvg('line', { attr: { x1: '15', y1: '0', x2: '30', y2: '0' } });
+
+      // Memristor rectangular body frame
+      parent.createSvg('rect', {
+        attr: {
+          x: '-15',
+          y: '-9',
+          width: '30',
+          height: '18',
+          fill: 'none',
+        },
+      });
+
+      // Thick polarity bar on the left terminal (p1)
+      parent.createSvg('line', {
+        attr: {
+          x1: '-15',
+          y1: '-9',
+          x2: '-15',
+          y2: '9',
+          'stroke-width': '3.5',
+        },
+      });
+
+      // Internal 'M' conductive profile path
+      parent.createSvg('path', {
+        attr: {
+          d: 'M -15 0 L -10 0 L -10 -5 L -2 -5 L -2 5 L 6 -5 L 6 0 L 15 0',
+          fill: 'none',
+        },
+      });
       break;
 
     case 'dc_source':
@@ -677,6 +702,23 @@ export function drawComponentMiniatureSVG(
       svg.createSvg('line', { attr: { x1: '6', y1: '0', x2: '19', y2: '0' } });
       break;
 
+    case 'memristor':
+      // Miniature lead lines
+      svg.createSvg('line', { attr: { x1: '-19', y1: '0', x2: '-10', y2: '0' } });
+      svg.createSvg('line', { attr: { x1: '10', y1: '0', x2: '19', y2: '0' } });
+      // Rectangular box
+      svg.createSvg('rect', {
+        attr: { x: '-10', y: '-6', width: '20', height: '12', fill: 'none' },
+      });
+      // Thick polarity bar on left terminal
+      svg.createSvg('line', {
+        attr: { x1: '-10', y1: '-6', x2: '-10', y2: '6', 'stroke-width': '2.5' },
+      });
+      // Internal M-curve
+      svg.createSvg('path', {
+        attr: { d: 'M -10 0 L -6 0 L -6 -3 L -1 -3 L -1 3 L 4 -3 L 4 0 L 10 0' },
+      });
+      break;
     case 'dc_source':
       svg.createSvg('line', { attr: { x1: '-19', y1: '0', x2: '-3', y2: '0' } });
       svg.createSvg('line', { attr: { x1: '-3', y1: '-8', x2: '-3', y2: '8' } });
